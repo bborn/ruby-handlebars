@@ -6,11 +6,11 @@ module Handlebars
     end
 
     def get(path)
-      items = path.split('.'.freeze)
-      if locals.key? items.first.to_sym
-        current = locals
+      items = path.split(".".freeze)
+      current = if locals.key? items.first.to_sym
+        locals
       else
-        current = @data
+        @data
       end
 
       until items.empty?
@@ -73,7 +73,7 @@ module Handlebars
       end
 
       if item.respond_to?(sym_attr)
-        return item.send(sym_attr)
+        item.send(sym_attr)
       end
     end
   end

@@ -1,15 +1,15 @@
-require_relative 'ruby-handlebars/parser'
-require_relative 'ruby-handlebars/tree'
-require_relative 'ruby-handlebars/template'
-require_relative 'ruby-handlebars/helper'
-require_relative 'ruby-handlebars/helpers/register_default_helpers'
-require_relative 'ruby-handlebars/escapers/html_escaper'
+require_relative "ruby-handlebars/parser"
+require_relative "ruby-handlebars/tree"
+require_relative "ruby-handlebars/template"
+require_relative "ruby-handlebars/helper"
+require_relative "ruby-handlebars/helpers/register_default_helpers"
+require_relative "ruby-handlebars/escapers/html_escaper"
 
 module Handlebars
   class Handlebars
     attr_reader :escaper
 
-    def initialize()
+    def initialize
       @as_helpers = {}
       @helpers = {}
       @partials = {}
