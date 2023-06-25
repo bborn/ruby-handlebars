@@ -72,6 +72,13 @@ describe Handlebars::Handlebars do
         expect(evaluate("Hello {{> plic}}")).to eq("Hello Plic")
       end
 
+      it "with whitespace controls" do
+        hbs.register_partial("bar", " bar ")
+        expect(evaluate("foo{{~> bar}}")).to eq("foobar ")
+        expect(evaluate("{{> bar~}}foo")).to eq(" barfoo")
+        expect(evaluate("{{~> bar~}}foo")).to eq("barfoo")
+      end
+
       it "using a name with a slash" do
         hbs.register_partial("parent/plic", "Plic")
         expect(evaluate("Hello {{> parent/plic}}")).to eq("Hello Plic")
@@ -115,6 +122,26 @@ describe Handlebars::Handlebars do
         expect(evaluate("{{rainbow}}")).to eq("-")
       end
 
+      it "without any argument with lstrip" do
+        hbs.register_helper("rainbow") { |context| "    -" }
+        expect(evaluate("{{~ rainbow}}")).to eq("-")
+
+        expect(evaluate("{{{~ rainbow}}}")).to eq("-")
+      end
+
+      it "without any argument with rstrip" do
+        hbs.register_helper("rainbow") { |context| "-    " }
+        expect(evaluate("{{rainbow~}}")).to eq("-")
+        expect(evaluate("{{{rainbow~}}}")).to eq("-")
+      end
+
+      it "without any argument with lstrip and rstrip" do
+        hbs.register_helper("rainbow") { |context| "   -   " }
+        expect(evaluate("{{~rainbow~}}")).to eq("-")
+
+        expect(evaluate("{{{~rainbow~}}}")).to eq("-")
+      end
+
       it "with a single argument" do
         hbs.register_helper("noah") { |context, value| value.delete("a") }
 
@@ -139,6 +166,7 @@ describe Handlebars::Handlebars do
         hbs.register_helper("wrap_dashes") { |context, value| "-#{value}-" }
 
         expect(evaluate('{{wrap_dashes (wrap_parens "hello")}}', {})).to eq("-(hello)-")
+
         expect(evaluate("{{wrap_dashes (wrap_parens world)}}", {world: "world"})).to eq("-(world)-")
       end
 

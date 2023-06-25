@@ -12,7 +12,7 @@ module Handlebars
       end
     end
 
-    class Replacement < TreeItem.new(:item, :strip_leading_whitespace, :strip_trailing_whitespace)
+    class Replacement < TreeItem.new(:item, :lstrip, :rstrip)
       def _eval(context)
         output = if context.get_helper(item.to_s).nil?
           context.get(item.to_s)
@@ -20,10 +20,10 @@ module Handlebars
           context.get_helper(item.to_s).apply(context)
         end
 
-        if strip_leading_whitespace
+        if lstrip
           output = output.lstrip
         end
-        if strip_trailing_whitespace
+        if rstrip
           output = output.rstrip
         end
 
@@ -53,7 +53,7 @@ module Handlebars
       end
     end
 
-    class Helper < TreeItem.new(:name, :parameters, :block, :else_block)
+    class Helper < TreeItem.new(:name, :parameters, :block, :else_block, :lstrip, :rstrip)
       def _eval(context)
         helper = context.get_helper(name.to_s)
         if helper.nil?
@@ -64,7 +64,7 @@ module Handlebars
       end
     end
 
-    class AsHelper < TreeItem.new(:name, :parameters, :as_parameters, :block, :else_block)
+    class AsHelper < TreeItem.new(:name, :parameters, :as_parameters, :block, :else_block, :lstrip_oblock, :rstrip_oblock, :lstrip_cblock, :rstrip_cblock, :lstrip_else, :rstrip_else)
       def _eval(context)
         helper = context.get_as_helper(name.to_s)
         if helper.nil?
@@ -81,18 +81,32 @@ module Handlebars
       end
     end
 
-    class Partial < TreeItem.new(:partial_name)
+    class Partial < TreeItem.new(:partial_name, :lstrip, :rstrip)
       def _eval(context)
-        context.get_partial(partial_name.to_s).call_with_context(context)
+        output = context.get_partial(partial_name.to_s).call_with_context(context)
+        if lstrip
+          output = output.lstrip
+        end
+        if rstrip
+          output = output.rstrip
+        end
+        output
       end
     end
 
-    class PartialWithArgs < TreeItem.new(:partial_name, :arguments)
+    class PartialWithArgs < TreeItem.new(:partial_name, :arguments, :lstrip, :rstrip)
       def _eval(context)
         [arguments].flatten.map(&:values).map do |vals|
           context.add_item vals.first.to_s, vals.last._eval(context)
         end
-        context.get_partial(partial_name.to_s).call_with_context(context)
+        output = context.get_partial(partial_name.to_s).call_with_context(context)
+        if lstrip
+          output = output.lstrip
+        end
+        if rstrip
+          output = output.rstrip
+        end
+        output
       end
     end
 
@@ -110,43 +124,60 @@ module Handlebars
 
   class Transform < Parslet::Transform
     rule(template_content: simple(:content)) { Tree::TemplateContent.new(content) }
-    rule(replaced_unsafe_item: simple(:item)) { Tree::EscapedReplacement.new(item) }
     rule(
       replaced_unsafe_item: simple(:item),
-      strip_leading_whitespace: simple(:strip_leading_whitespace),
-      strip_trailing_whitespace: simple(:strip_trailing_whitespace)
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
     ) {
-      Tree::EscapedReplacement.new(item,
-        strip_leading_whitespace,
-        strip_trailing_whitespace)
+      Tree::EscapedReplacement.new(item, lstrip, rstrip)
+    }
+
+    rule(
+      replaced_unsafe_item: simple(:item),
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
+    ) {
+      Tree::EscapedReplacement.new(item, lstrip, rstrip)
     }
 
     rule(
       replaced_safe_item: simple(:item),
-      strip_leading_whitespace: simple(:strip_leading_whitespace),
-      strip_trailing_whitespace: simple(:strip_trailing_whitespace)
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
     ) {
-      Tree::Replacement.new(
-        item,
-        strip_leading_whitespace,
-        strip_trailing_whitespace
-      )
+      Tree::Replacement.new(item, lstrip, rstrip)
     }
     rule(str_content: simple(:content)) { Tree::String.new(content) }
     rule(parameter_name: simple(:name)) { Tree::Parameter.new(name) }
 
     rule(
       unsafe_helper_name: simple(:name),
+      parameters: subtree(:parameters),
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
+    ) {
+      Tree::EscapedHelper.new(name, parameters, nil, nil, lstrip, rstrip)
+    }
+    rule(
+      unsafe_helper_name: simple(:name),
       parameters: subtree(:parameters)
     ) {
-      Tree::EscapedHelper.new(name, parameters)
+      Tree::EscapedHelper.new(name, parameters, nil, nil, nil, nil)
     }
 
     rule(
       safe_helper_name: simple(:name),
+      parameters: subtree(:parameters),
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
+    ) {
+      Tree::Helper.new(name, parameters, nil, nil, lstrip, rstrip)
+    }
+    rule(
+      safe_helper_name: simple(:name),
       parameters: subtree(:parameters)
     ) {
-      Tree::Helper.new(name, parameters)
+      Tree::Helper.new(name, parameters, nil, nil, nil, nil)
     }
 
     rule(
@@ -176,18 +207,19 @@ module Handlebars
       helper_name: simple(:name),
       parameters: subtree(:parameters),
       block_items: subtree(:block_items),
-      else_block_items: subtree(:else_block_items)
+      else_block_items: subtree(:else_block_items),
+      lstrip_oblock: simple(:lstrip_oblock),
+      rstrip_oblock: simple(:rstrip_oblock),
+      lstrip_cblock: simple(:lstrip_cblock),
+      rstrip_cblock: simple(:rstrip_cblock),
+      lstrip_else: simple(:lstrip_else),
+      rstrip_else: simple(:rstrip_else)
     ) {
-      Tree::Helper.new(name, parameters, block_items, else_block_items)
-    }
-
-    rule(
-      helper_name: simple(:name),
-      parameters: subtree(:parameters),
-      as_parameters: subtree(:as_parameters),
-      block_items: subtree(:block_items)
-    ) {
-      Tree::AsHelper.new(name, parameters, as_parameters, block_items)
+      Tree::Helper.new(
+        name, parameters, block_items, else_block_items,
+        lstrip_oblock, rstrip_oblock, lstrip_cblock,
+        rstrip_cblock, lstrip_else, rstrip_else
+      )
     }
 
     rule(
@@ -195,20 +227,52 @@ module Handlebars
       parameters: subtree(:parameters),
       as_parameters: subtree(:as_parameters),
       block_items: subtree(:block_items),
-      else_block_items: subtree(:else_block_items)
+      lstrip_oblock: simple(:lstrip_oblock),
+      rstrip_oblock: simple(:rstrip_oblock),
+      lstrip_cblock: simple(:lstrip_cblock),
+      rstrip_cblock: simple(:rstrip_cblock)
     ) {
-      Tree::AsHelper.new(name, parameters, as_parameters, block_items, else_block_items)
+      Tree::AsHelper.new(
+        name, parameters, as_parameters, block_items, nil, lstrip_oblock, rstrip_oblock, lstrip_cblock, rstrip_cblock
+      )
+    }
+
+    rule(
+      helper_name: simple(:name),
+      parameters: subtree(:parameters),
+      as_parameters: subtree(:as_parameters),
+      block_items: subtree(:block_items),
+      else_block_items: subtree(:else_block_items),
+      lstrip_oblock: simple(:lstrip_oblock),
+      rstrip_cblock: simple(:rstrip_cblock),
+      lstrip_else: simple(:lstrip_else),
+      rstrip_else: simple(:rstrip_else)
+    ) {
+      raise "here"
+      Tree::AsHelper.new(name, parameters, as_parameters, block_items, else_block_items, lstrip_oblock, rstrip_cblock, lstrip_else, rstrip_else)
     }
 
     rule(
       partial_name: simple(:partial_name),
-      arguments: subtree(:arguments)
+      arguments: subtree(:arguments),
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
     ) {
-      Tree::PartialWithArgs.new(partial_name, arguments)
+      Tree::PartialWithArgs.new(partial_name, arguments, lstrip, rstrip)
     }
 
-    rule(partial_name: simple(:partial_name)) { Tree::Partial.new(partial_name) }
+    rule(
+      partial_name: simple(:partial_name),
+      lstrip: simple(:lstrip),
+      rstrip: simple(:rstrip)
+    ) {
+      Tree::Partial.new(partial_name, lstrip, rstrip)
+    }
+
     rule(block_items: subtree(:block_items)) { Tree::Block.new(block_items) }
-    rule(else_block_items: subtree(:else_block_items)) { Tree::Block.new(block_items) }
+
+    rule(
+      else_block_items: subtree(:else_block_items)
+    ) { Tree::Block.new(block_items) }
   end
 end

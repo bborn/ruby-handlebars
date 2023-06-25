@@ -9,7 +9,8 @@ module Handlebars
     rule(:hash) { str("#") }
     rule(:slash) { str("/") }
     rule(:tilde) { str("~") }
-    rule(:tilde?) { tilde.maybe }
+    rule(:tilde?) { str("~").maybe }
+
     rule(:ocurly) { str("{") }
     rule(:ccurly) { str("}") }
     rule(:pipe) { str("|") }
@@ -17,6 +18,7 @@ module Handlebars
 
     rule(:docurly) { ocurly >> ocurly }
     rule(:dccurly) { ccurly >> ccurly }
+
     rule(:tocurly) { ocurly >> ocurly >> ocurly }
     rule(:tccurly) { ccurly >> ccurly >> ccurly }
 
@@ -29,6 +31,7 @@ module Handlebars
 
     rule(:nocurly) { match("[^{}]") }
     rule(:eof) { any.absent? }
+
     rule(:template_content) {
       (
         nocurly.repeat(1) | # A sequence of non-curlies
@@ -40,20 +43,20 @@ module Handlebars
 
     rule(:unsafe_replacement) {
       docurly >>
-        tilde?.as(:strip_leading_whitespace) >>
+        tilde?.as(:lstrip) >>
         space? >>
         path.as(:replaced_unsafe_item) >>
         space? >>
-        tilde?.as(:strip_trailing_whitespace) >>
+        tilde?.as(:rstrip) >>
         dccurly
     }
     rule(:safe_replacement) {
       tocurly >>
-        tilde?.as(:strip_leading_whitespace) >>
+        tilde?.as(:lstrip) >>
         space? >>
         path.as(:replaced_safe_item) >>
         space? >>
-        tilde?.as(:strip_trailing_whitespace) >>
+        tilde?.as(:rstrip) >>
         tccurly
     }
 
@@ -73,27 +76,57 @@ module Handlebars
     rule(:argument) { identifier.as(:key) >> space? >> eq >> space? >> parameter.as(:value) }
     rule(:arguments) { argument >> (space >> argument).repeat }
 
-    rule(:unsafe_helper) { docurly >> space? >> identifier.as(:unsafe_helper_name) >> (space? >> parameters.as(:parameters)).maybe >> space? >> dccurly }
-    rule(:safe_helper) { tocurly >> space? >> identifier.as(:safe_helper_name) >> (space? >> parameters.as(:parameters)).maybe >> space? >> tccurly }
+    rule(:unsafe_helper) {
+      docurly >>
+        tilde?.as(:lstrip) >>
+        space? >>
+        identifier.as(:unsafe_helper_name) >> (space? >> parameters.as(:parameters)).maybe >>
+        space? >>
+        tilde?.as(:rstrip) >>
+        dccurly
+    }
+    rule(:safe_helper) {
+      tocurly >>
+        tilde?.as(:lstrip) >>
+        space? >>
+        identifier.as(:safe_helper_name) >> (space? >> parameters.as(:parameters)).maybe >>
+        space? >>
+        tilde?.as(:rstrip) >>
+        tccurly
+    }
 
     rule(:helper) { unsafe_helper | safe_helper }
 
     rule(:as_block_helper) {
       docurly >>
+        tilde?.as(:lstrip_oblock) >>
         hash >>
         identifier.capture(:helper_name).as(:helper_name) >>
         space >> parameters.as(:parameters) >>
         space >> as_kw >> space >> pipe >> space? >> parameters.as(:as_parameters) >> space? >> pipe >>
         space? >>
+        tilde?.as(:rstrip_oblock) >>
         dccurly >>
         scope {
           block
         } >>
         scope {
-          docurly >> space? >> else_kw >> space? >> dccurly >> scope { block_item.repeat.as(:else_block_items) }
+          docurly >>
+            # tilde?.as(:lstrip_else) >>
+            space? >>
+            else_kw >>
+            space? >>
+            # tilde?.as(:rstrip_else) >>
+            dccurly >>
+            scope { block_item.repeat.as(:else_block_items) }
         }.maybe >>
         dynamic { |src, scope|
-          docurly >> slash >> str(scope.captures[:helper_name]) >> dccurly
+          docurly >>
+            tilde?.as(:lstrip_cblock) >>
+            slash >>
+            str(scope.captures[:helper_name]) >>
+            tilde?.as(:rstrip_cblock) >>
+            dccurly
         }
     }
 
@@ -117,12 +150,14 @@ module Handlebars
 
     rule(:partial) {
       docurly >>
+        tilde?.as(:lstrip) >>
         gt >>
         space? >>
         directory.as(:partial_name) >>
         space? >>
         arguments.as(:arguments).maybe >>
         space? >>
+        tilde?.as(:rstrip) >>
         dccurly
     }
 
