@@ -112,11 +112,11 @@ module Handlebars
         } >>
         scope {
           docurly >>
-            # tilde?.as(:lstrip_else) >>
+            tilde?.as(:lstrip_else) >>
             space? >>
             else_kw >>
             space? >>
-            # tilde?.as(:rstrip_else) >>
+            tilde?.as(:rstrip_else) >>
             dccurly >>
             scope { block_item.repeat.as(:else_block_items) }
         }.maybe >>
@@ -132,19 +132,29 @@ module Handlebars
 
     rule(:block_helper) {
       docurly >>
+        tilde?.as(:lstrip_oblock) >>
         hash >>
         identifier.capture(:helper_name).as(:helper_name) >>
         (space >> parameters.as(:parameters)).maybe >>
         space? >>
+        tilde?.as(:rstrip_oblock) >>
         dccurly >>
         scope {
           block
         } >>
         scope {
-          docurly >> space? >> else_kw >> space? >> dccurly >> scope { block_item.repeat.as(:else_block_items) }
+          docurly >>
+            tilde?.as(:lstrip_else) >>
+            space? >> else_kw >> space? >>
+            tilde?.as(:rstrip_else) >>
+            dccurly >> scope { block_item.repeat.as(:else_block_items) }
         }.maybe >>
         dynamic { |src, scope|
-          docurly >> slash >> str(scope.captures[:helper_name]) >> dccurly
+          docurly >>
+            tilde?.as(:lstrip_cblock) >>
+            slash >> str(scope.captures[:helper_name]) >>
+            tilde?.as(:rstrip_cblock) >>
+            dccurly
         }
     }
 

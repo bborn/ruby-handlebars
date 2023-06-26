@@ -18,8 +18,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -28,8 +28,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "plic",
-            strip_leading_whitespace: "~",
-            strip_trailing_whitespace: nil
+            lstrip: "~",
+            rstrip: nil
           }
         ]
       })
@@ -38,8 +38,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -48,8 +48,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -58,8 +58,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -70,8 +70,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "@first",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -79,8 +79,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "@last",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -88,8 +88,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_unsafe_item: "@index",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -100,8 +100,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_safe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -110,8 +110,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_safe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -120,8 +120,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_safe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -130,8 +130,8 @@ describe Handlebars::Parser do
         block_items: [
           {
             replaced_safe_item: "plic",
-            strip_leading_whitespace: nil,
-            strip_trailing_whitespace: nil
+            lstrip: nil,
+            rstrip: nil
           }
         ]
       })
@@ -143,7 +143,10 @@ describe Handlebars::Parser do
           block_items: [
             {
               unsafe_helper_name: "capitalize",
-              parameters: {parameter_name: "plic"}
+              parameters: {parameter_name: "plic"},
+              lstrip: nil,
+              rstrip: nil
+
             }
           ]
         })
@@ -154,7 +157,9 @@ describe Handlebars::Parser do
           block_items: [
             {
               unsafe_helper_name: "capitalize",
-              parameters: {parameter_name: {str_content: "hi"}}
+              parameters: {parameter_name: {str_content: "hi"}},
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })
@@ -165,7 +170,9 @@ describe Handlebars::Parser do
           block_items: [
             {
               unsafe_helper_name: "capitalize",
-              parameters: {parameter_name: {str_content: ""}}
+              parameters: {parameter_name: {str_content: ""}},
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })
@@ -176,7 +183,9 @@ describe Handlebars::Parser do
           block_items: [
             {
               unsafe_helper_name: "capitalize",
-              parameters: {parameter_name: {str_content: "hi"}}
+              parameters: {parameter_name: {str_content: "hi"}},
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })
@@ -187,7 +196,9 @@ describe Handlebars::Parser do
           block_items: [
             {
               unsafe_helper_name: "capitalize",
-              parameters: {parameter_name: {str_content: ""}}
+              parameters: {parameter_name: {str_content: ""}},
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })
@@ -202,7 +213,9 @@ describe Handlebars::Parser do
                 {parameter_name: "plic"},
                 {parameter_name: "ploc"},
                 {parameter_name: "plouf"}
-              ]
+              ],
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })
@@ -215,7 +228,11 @@ describe Handlebars::Parser do
               helper_name: "capitalize",
               block_items: [
                 {template_content: "plic"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
             }
           ]
         })
@@ -229,7 +246,12 @@ describe Handlebars::Parser do
               parameters: {parameter_name: {str_content: "#"}},
               block_items: [
                 {template_content: "plic"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
+
             }
           ]
         })
@@ -245,10 +267,19 @@ describe Handlebars::Parser do
                 {template_content: "plic "},
                 {
                   helper_name: "capitalize",
-                  block_items: [{template_content: "ploc"}]
+                  block_items: [{template_content: "ploc"}],
+                  rstrip_oblock: nil,
+                  lstrip_oblock: nil,
+                  lstrip_cblock: nil,
+                  rstrip_cblock: nil
+
                 },
                 {template_content: " plouc"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
             }
           ]
         })
@@ -262,7 +293,10 @@ describe Handlebars::Parser do
               parameters: {
                 safe_helper_name: "bar",
                 parameters: {parameter_name: "baz"}
-              }
+              },
+              lstrip: nil,
+              rstrip: nil
+
             }
           ]
         })
@@ -279,7 +313,12 @@ describe Handlebars::Parser do
               as_parameters: {parameter_name: "item"},
               block_items: [
                 {template_content: "plic"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
+
             }
           ]
         })
@@ -297,7 +336,13 @@ describe Handlebars::Parser do
               ],
               else_block_items: [
                 {template_content: "Hummm, empty"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_else: nil,
+              rstrip_else: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
             }
           ]
         })
@@ -320,12 +365,22 @@ describe Handlebars::Parser do
                   ],
                   block_items: [
                     {template_content: "show item"}
-                  ]
+                  ],
+                  rstrip_oblock: nil,
+                  lstrip_oblock: nil,
+                  lstrip_cblock: nil,
+                  rstrip_cblock: nil
                 }
               ],
               else_block_items: [
                 {template_content: "Hummm, empty"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_else: nil,
+              rstrip_else: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
             }
           ]
         })
@@ -341,7 +396,12 @@ describe Handlebars::Parser do
               parameters: {parameter_name: "something"},
               block_items: [
                 {template_content: "show something else"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
+
             }
           ]
         })
@@ -358,7 +418,13 @@ describe Handlebars::Parser do
               ],
               else_block_items: [
                 {template_content: "not ok"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil,
+              lstrip_else: nil,
+              rstrip_else: nil
             }
           ]
         })
@@ -376,10 +442,18 @@ describe Handlebars::Parser do
                   parameters: {parameter_name: "another_thing"},
                   block_items: [
                     {template_content: "Plic"}
-                  ]
+                  ],
+                  rstrip_oblock: nil,
+                  lstrip_oblock: nil,
+                  lstrip_cblock: nil,
+                  rstrip_cblock: nil
                 },
                 {template_content: "ploc"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
             }
           ]
         })
@@ -404,7 +478,13 @@ describe Handlebars::Parser do
                     {
                       template_content: "Case 2"
                     }
-                  ]
+                  ],
+                  rstrip_oblock: nil,
+                  lstrip_oblock: nil,
+                  lstrip_cblock: nil,
+                  rstrip_cblock: nil,
+                  lstrip_else: nil,
+                  rstrip_else: nil
                 }
               ],
               else_block_items: [
@@ -420,9 +500,22 @@ describe Handlebars::Parser do
                     {
                       template_content: "Case 4"
                     }
-                  ]
+                  ],
+                  rstrip_oblock: nil,
+                  lstrip_oblock: nil,
+                  lstrip_cblock: nil,
+                  rstrip_cblock: nil,
+                  lstrip_else: nil,
+                  rstrip_else: nil
                 }
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil,
+              lstrip_else: nil,
+              rstrip_else: nil
+
             }
           ]
         })
@@ -440,11 +533,15 @@ describe Handlebars::Parser do
                 {template_content: " "},
                 {
                   replaced_unsafe_item: "this.name",
-                  strip_leading_whitespace: nil,
-                  strip_trailing_whitespace: nil
+                  lstrip: nil,
+                  rstrip: nil
                 },
                 {template_content: " "}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
             }
           ]
         })
@@ -460,8 +557,8 @@ describe Handlebars::Parser do
                 {template_content: " "},
                 {
                   replaced_unsafe_item: "this.name",
-                  strip_leading_whitespace: nil,
-                  strip_trailing_whitespace: nil
+                  lstrip: nil,
+                  rstrip: nil
                 },
                 {template_content: " <ul> "},
                 {
@@ -471,14 +568,24 @@ describe Handlebars::Parser do
                     {template_content: " <li>"},
                     {
                       replaced_unsafe_item: "this",
-                      strip_leading_whitespace: nil,
-                      strip_trailing_whitespace: nil
+                      lstrip: nil,
+                      rstrip: nil
                     },
                     {template_content: "</li> "}
-                  ]
+                  ],
+                  rstrip_oblock: nil,
+                  lstrip_oblock: nil,
+                  lstrip_cblock: nil,
+                  rstrip_cblock: nil
+
                 },
                 {template_content: "</ul>"}
-              ]
+              ],
+              rstrip_oblock: nil,
+              lstrip_oblock: nil,
+              lstrip_cblock: nil,
+              rstrip_cblock: nil
+
             }
           ]
         })
@@ -508,8 +615,8 @@ describe Handlebars::Parser do
             {template_content: "Hi }"},
             {
               replaced_unsafe_item: "hey",
-              strip_leading_whitespace: nil,
-              strip_trailing_whitespace: nil
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })
@@ -521,8 +628,8 @@ describe Handlebars::Parser do
             {template_content: "}"},
             {
               replaced_unsafe_item: "hey",
-              strip_leading_whitespace: nil,
-              strip_trailing_whitespace: nil
+              lstrip: nil,
+              rstrip: nil
             }
           ]
         })

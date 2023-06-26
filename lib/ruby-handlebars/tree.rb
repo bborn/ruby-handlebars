@@ -53,7 +53,18 @@ module Handlebars
       end
     end
 
-    class Helper < TreeItem.new(:name, :parameters, :block, :else_block, :lstrip, :rstrip)
+    class Helper < TreeItem.new(
+      :name,
+      :parameters,
+      :block,
+      :else_block,
+      :lstrip_oblock,
+      :rstrip_oblock,
+      :lstrip_cblock,
+      :rstrip_cblock,
+      :lstrip_else,
+      :rstrip_else
+    )
       def _eval(context)
         helper = context.get_helper(name.to_s)
         if helper.nil?
@@ -186,6 +197,16 @@ module Handlebars
     ) {
       Tree::Helper.new(name, [], block_items)
     }
+    rule(
+      helper_name: simple(:name),
+      block_items: subtree(:block_items),
+      lstrip_oblock: simple(:lstrip_oblock),
+      rstrip_oblock: simple(:rstrip_oblock),
+      lstrip_cblock: simple(:lstrip_cblock),
+      rstrip_cblock: simple(:rstrip_cblock)
+    ) {
+      Tree::Helper.new(name, [], block_items)
+    }
 
     rule(
       helper_name: simple(:name),
@@ -216,9 +237,36 @@ module Handlebars
       rstrip_else: simple(:rstrip_else)
     ) {
       Tree::Helper.new(
-        name, parameters, block_items, else_block_items,
-        lstrip_oblock, rstrip_oblock, lstrip_cblock,
-        rstrip_cblock, lstrip_else, rstrip_else
+        name,
+        parameters,
+        block_items,
+        else_block_items,
+        lstrip_oblock,
+        rstrip_oblock,
+        lstrip_cblock,
+        rstrip_cblock,
+        lstrip_else,
+        rstrip_else
+      )
+    }
+    rule(
+      helper_name: simple(:name),
+      parameters: subtree(:parameters),
+      block_items: subtree(:block_items),
+      lstrip_oblock: simple(:lstrip_oblock),
+      rstrip_oblock: simple(:rstrip_oblock),
+      lstrip_cblock: simple(:lstrip_cblock),
+      rstrip_cblock: simple(:rstrip_cblock)
+    ) {
+      Tree::Helper.new(
+        name,
+        parameters,
+        block_items,
+        nil,
+        lstrip_oblock,
+        rstrip_oblock,
+        lstrip_cblock,
+        rstrip_cblock
       )
     }
 
@@ -244,11 +292,12 @@ module Handlebars
       block_items: subtree(:block_items),
       else_block_items: subtree(:else_block_items),
       lstrip_oblock: simple(:lstrip_oblock),
+      rstrip_oblock: simple(:rstrip_cblock),
+      lstrip_cblock: simple(:lstrip_oblock),
       rstrip_cblock: simple(:rstrip_cblock),
       lstrip_else: simple(:lstrip_else),
       rstrip_else: simple(:rstrip_else)
     ) {
-      raise "here"
       Tree::AsHelper.new(name, parameters, as_parameters, block_items, else_block_items, lstrip_oblock, rstrip_cblock, lstrip_else, rstrip_else)
     }
 
@@ -273,6 +322,12 @@ module Handlebars
 
     rule(
       else_block_items: subtree(:else_block_items)
+    ) { Tree::Block.new(block_items) }
+
+    rule(
+      else_block_items: subtree(:else_block_items),
+      lstrip_else: simple(:lstrip_else),
+      rstrip_else: simple(:rstrip_else)
     ) { Tree::Block.new(block_items) }
   end
 end
